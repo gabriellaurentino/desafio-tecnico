@@ -1,0 +1,89 @@
+@startuml
+title POS - Software Architecture
+
+left to right direction
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam roundcorner 10
+
+skinparam package {
+    BorderColor #64748B
+    FontColor #1F2937
+    BackgroundColor #F8FAFC
+}
+
+skinparam component {
+    BackgroundColor #EAF2FF
+    BorderColor #315B8A
+    FontColor #1F2937
+}
+
+skinparam ArrowColor #315B8A
+skinparam ArrowFontColor #374151
+
+package "Interface" {
+    component "Demo / CLI\n(main.c)" as DEMO
+}
+
+package "Application Layer" {
+    component "POS Application\n(pos_app.c)" as APP
+}
+
+package "Library Layer" {
+
+    component "Transaction FSM\n(transaction.c)" as FSM
+
+    component "ISO8583\n(iso8583.c)" as ISO
+
+    component "Luhn Validation\n(luhn.c)" as LUHN
+
+    component "Transaction Log\n(log.c)" as LOG
+
+    component "Flash Storage\n(flash_storage.c)" as FLASH
+
+    component "Utilities\n(utils.c)" as UTILS
+
+    component "String Utilities\n(string_utils.c)" as STR
+}
+
+package "Quality Assurance" {
+    component "Unit Tests" as UNIT
+    component "Integration Tests" as INTEGRATION
+}
+
+DEMO --> APP : User interaction
+APP --> FSM : Transaction flow
+APP --> ISO : Message construction
+APP --> LUHN : Card validation
+APP --> LOG : Transaction history
+
+LOG --> FLASH : Persistent storage
+
+APP ..> UTILS : Support functions
+APP ..> STR : String handling
+
+UNIT ..> FSM : Tests
+UNIT ..> ISO : Tests
+UNIT ..> LUHN : Tests
+UNIT ..> LOG : Tests
+UNIT ..> FLASH : Tests
+UNIT ..> UTILS : Tests
+UNIT ..> STR : Tests
+
+INTEGRATION ..> APP : End-to-end flow
+
+note bottom of APP
+  Coordinates the POS transaction
+  and integrates library modules.
+end note
+
+note bottom of FLASH
+  Simulated storage layer.
+  No physical POS hardware required.
+end note
+
+@enduml

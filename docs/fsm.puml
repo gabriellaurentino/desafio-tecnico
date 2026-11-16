@@ -1,0 +1,55 @@
+@startuml
+title POS - Finite State Machine (FSM)
+
+left to right direction
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 12
+skinparam state {
+    BackgroundColor #F4F7FC
+    BorderColor #315B8A
+    FontColor #1F2937
+    ArrowColor #315B8A
+    AttributeFontColor #374151
+}
+skinparam ArrowFontColor #1F2937
+skinparam ArrowFontSize 11
+skinparam StateFontSize 13
+
+[*] -right-> IDLE
+
+state IDLE
+state CARD
+state ISO_SEND
+state WAIT_RESP
+state APPROVED #D9F2E6
+state DECLINED #FCE4E4
+
+IDLE -right-> CARD : START
+
+CARD -right-> ISO_SEND : CARD_READ
+CARD -up-> IDLE : RESET
+
+ISO_SEND -up-> IDLE : RESET
+ISO_SEND -right-> WAIT_RESP : REQUEST_SENT
+
+WAIT_RESP -right-> APPROVED : RESPONSE_APPROVED\n[!reversal_required]
+WAIT_RESP -down-> DECLINED : RESPONSE_DECLINED\n[!reversal_required]
+
+WAIT_RESP -up-> WAIT_RESP : TIMEOUT\n[!reversal_required]\n/ reversal_required = 1
+
+WAIT_RESP -down-> IDLE : REVERSAL_COMPLETED\n[reversal_required]\n/ reversal_required = 0
+
+APPROVED -down-> IDLE : RESET
+DECLINED -left-> IDLE : RESET
+
+note bottom of WAIT_RESP
+  Timeout mantém a transação em WAIT_RESP.
+  Respostas tardias são rejeitadas.
+  Um segundo timeout é rejeitado.
+  RESET é rejeitado com reversão pendente.
+end note
+
+@enduml
